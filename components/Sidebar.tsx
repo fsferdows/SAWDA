@@ -75,6 +75,23 @@ export const Sidebar: React.FC<SidebarProps> = ({ options, setOptions, onImageUp
           </div>
         </InputField>
         
+        {(options.designType === '3D Relief' || options.designType === 'Mixed') && (
+            <InputField label={`Depth Layers (2-10)`}>
+              <div className="flex items-center space-x-2">
+                <input 
+                  type="range" 
+                  min="2" 
+                  max="10" 
+                  step="1"
+                  value={options.depthLayers} 
+                  onChange={e => handleOptionChange('depthLayers', parseInt(e.target.value, 10))}
+                  className="w-full h-2 bg-gray-300 dark:bg-gray-600 rounded-lg appearance-none cursor-pointer"
+                />
+                <span className="font-semibold text-sm w-8 text-center">{options.depthLayers}</span>
+              </div>
+            </InputField>
+        )}
+        
         <InputField label="Outline Thickness (1-10)">
           <input 
             type="number" 

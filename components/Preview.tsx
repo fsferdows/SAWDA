@@ -8,7 +8,6 @@ interface PreviewProps {
   generatedPreview: string | null;
   isLoading: boolean;
   options: DesignOptions;
-  onResetGeneration: () => void;
 }
 
 const loadingStages = [
@@ -19,7 +18,7 @@ const loadingStages = [
   'Finalizing Preview',
 ];
 
-export const Preview: React.FC<PreviewProps> = ({ imagePreview, generatedPreview, isLoading, options, onResetGeneration }) => {
+export const Preview: React.FC<PreviewProps> = ({ imagePreview, generatedPreview, isLoading, options }) => {
   const [currentStageIndex, setCurrentStageIndex] = useState(0);
 
   useEffect(() => {
@@ -77,7 +76,7 @@ export const Preview: React.FC<PreviewProps> = ({ imagePreview, generatedPreview
       );
     }
     if (generatedPreview) {
-      return <ImageEditor src={generatedPreview} options={options} onResetGeneration={onResetGeneration} isLoading={isLoading} />;
+      return <ImageEditor src={generatedPreview} options={options} isLoading={isLoading} />;
     }
     if (imagePreview) {
       return <img src={imagePreview} alt="Uploaded file preview" className="max-w-full max-h-full object-contain rounded-lg shadow-lg" />;

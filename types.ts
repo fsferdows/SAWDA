@@ -13,6 +13,7 @@ export interface DesignOptions {
   outputFormat: OutputFormat;
   prompt: string;
   outlineThickness: number;
+  depthLayers: number;
 }
 
 export interface TranscriptEntry {

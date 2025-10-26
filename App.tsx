@@ -38,6 +38,7 @@ const App: React.FC = () => {
     outputFormat: 'JD',
     prompt: '',
     outlineThickness: 5,
+    depthLayers: 5,
   });
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [generatedPreview, setGeneratedPreview] = useState<string | null>(null);
@@ -83,19 +84,26 @@ const App: React.FC = () => {
         promptDetails = `Generate a grayscale depth map suitable for a 3D relief wood carving.
 - WHITE (#FFFFFF) represents the highest point (the uncarved surface of the wood).
 - BLACK (#000000) represents the deepest engraved point.
-- Use smooth gradients to represent the varying depths for a realistic 3D effect.
+- Use smooth gradients and a full, well-distributed range of grayscale values to represent the varying depths. This is critical as the design will be sliced into ${designOptions.depthLayers} distinct depth layers for machining.
 - The design should have well-defined edges, with the sharpness corresponding to an outline thickness of ${designOptions.outlineThickness} on a scale of 1 to 10.`;
       }
 
-      let fullPrompt = generatedPreview 
-        ? `Based on the provided image, modify it following these new instructions: "${designOptions.prompt}".`
-        : `Based on the provided image, generate a new CNC-ready design for wood engraving.`;
-      
-      if (designOptions.prompt) {
-          fullPrompt += ` The user's specific instructions are: "${designOptions.prompt}".`;
+      const accuracyInstruction = `Your primary task is to create a CNC design for furniture based on the reference image.
+**Correction First:** Analyze the source image for any perspective distortion or angle. Correct it to produce a clean, straight-on, orthographic view of the furniture.
+**High Fidelity:** The final design must be a highly accurate and faithful representation of the furniture in the reference image. Preserve the core shapes, proportions, and key features.`;
+
+      let fullPrompt = accuracyInstruction;
+
+      if (generatedPreview && designOptions.prompt) {
+        fullPrompt += `\nThen, modify the design based on these new instructions: "${designOptions.prompt}".`;
+      } else if (designOptions.prompt) {
+        fullPrompt += `\nApply the following style or modifications: "${designOptions.prompt}".`;
+      } else if (!generatedPreview) {
+        fullPrompt += `\nGenerate a new CNC-ready design for this furniture piece.`;
       }
-      
-      fullPrompt += ` The design is for "${designOptions.material}" material, with physical dimensions of ${designOptions.width}mm x ${designOptions.height}mm x ${designOptions.depth}mm.`;
+
+      fullPrompt += `\n\n--- DESIGN SPECIFICATIONS ---\n`;
+      fullPrompt += `The design is for "${designOptions.material}" furniture, with physical dimensions of ${designOptions.width}mm x ${designOptions.height}mm x ${designOptions.depth}mm.`;
       fullPrompt += `\n\n--- OUTPUT REQUIREMENTS ---\n${promptDetails}`;
 
 
@@ -103,7 +111,7 @@ const App: React.FC = () => {
         text: fullPrompt,
       };
       
-      const systemInstruction = `You are an expert CNC designer specializing in creating machine-ready patterns for wood engraving, specifically for use with JD Paint 5.11 software. Your primary goal is to convert user prompts and reference images into usable, high-quality engraving plans. You must strictly adhere to the output requirements for either 2D bitmap or 3D grayscale depth maps.`;
+      const systemInstruction = `You are an expert CNC furniture designer. Your primary goal is to convert user photos of furniture into production-ready, highly accurate CNC engraving plans. A critical part of your task is to analyze the source image for perspective distortion or awkward angles and correct it to produce a clean, straight-on, orthographic view before generating the final design. The output must be a faithful representation of the reference furniture, suitable for manufacturing.`;
 
       const response = await ai.models.generateContent({
         model: 'gemini-2.5-flash-image',
@@ -137,10 +145,6 @@ const App: React.FC = () => {
       setIsLoading(false);
     }
   };
-
-  const handleResetGeneration = () => {
-    setGeneratedPreview(null);
-  };
   
   const handleLogin = () => setIsAuthenticated(true);
   const handleLogout = () => setIsAuthenticated(false);
@@ -167,7 +171,6 @@ const App: React.FC = () => {
             generatedPreview={generatedPreview}
             isLoading={isLoading}
             options={designOptions}
-            onResetGeneration={handleResetGeneration}
           />
         </div>
         <CommandBar
