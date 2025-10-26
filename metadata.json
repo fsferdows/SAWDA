@@ -1,0 +1,7 @@
+{
+  "name": " SAWDA CNC DESIGN",
+  "description": "An AI-powered application to generate CNC-ready design files from images, featuring a real-time conversational AI assistant to guide you through the process.",
+  "requestFramePermissions": [
+    "microphone"
+  ]
+}
